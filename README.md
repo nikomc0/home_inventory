@@ -1,4 +1,4 @@
-# home_inventory
+# home_inventory_api
 Simple API to aid in managing your home inventory.
 
 Current namespace /api/v1
