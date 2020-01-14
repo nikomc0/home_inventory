@@ -4,8 +4,8 @@ Simple API to aid in managing your home inventory.
 Current namespace /api/v1
 
 ### To Do
-[ ] - Sample App using React Native
-[ ] - Integrate with Google Home.
+- [ ] - Sample App using React Native
+- [ ] - Integrate with Google Home.
 
 ### Show Items
 Endpoint to get all items or to filer on specific field values i.e. 
