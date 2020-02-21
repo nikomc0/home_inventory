@@ -1,19 +1,20 @@
 class Item
 	include Mongoid::Document
 
-	field :name,  type: String
+	field :item,  type: String
   field :store, type: String
   field :price, type: Float
   field :room,  type: String
+  field :qty,   type: Float
 
-  validates :name,  presence: true
+  validates :item,  presence: true
   validates :store, presence: true
-  validates :price, presence: true
   validates :room,  presence: true
 
-  index({ name: 'text' })
+  index({ item: 'text' })
 
-  scope :name,  -> (name) { where(name: /^#{name}/) }
+  scope :item,  -> (item) { where(item: /^#{item}/) }
   scope :store, -> (store) { where(store: /^#{store}/) }
   scope :room,  -> (room) { where(room: /^#{room}/) }
+  scope :qty,   -> (qty)  {where(qty: /^#{qty}/) }
 end

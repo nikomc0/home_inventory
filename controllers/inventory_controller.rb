@@ -22,14 +22,28 @@ class InventoryController < Application
 	  end
 
 	 	post '/items' do
-	 		item = Item.new(json_params)
+	 		params = json_params
+	 		action = params['queryResult']['action']
+	 		parameters = params['queryResult']['parameters']
 
-	 		if item.save
-	 			response.headers['Location'] = "#{base_url}/api/v1/items/#{item.id}"
-	 			status 201
+	 		case action
+	 		when "add_item"
+	 			add_item(parameters)
+	 		when "delete_item"
+	 			delete_item(parameters)
+	 		when "delete_all"
+	 			delete_all
 	 		else
-	 			status 422
-	 			body ItemSerializer.new(item).to_json
+	 			item = Item.new(parameters)
+				item.qty = 1
+
+				if item.save
+					response.headers['Location'] = "#{base_url}/api/v1/items/#{item.id}"
+					status 201
+				else
+					status 422
+					body ItemSerializer.new(item).to_json
+				end
 	 		end
 	 	end
 
@@ -48,6 +62,47 @@ class InventoryController < Application
 	 	delete '/items/:id' do |id|
 	 		item = Item.where(id: id).first
 	 		item.destroy if item
+	 		status 204
+	 	end
+
+	 	def add_item(parameters)
+	 		existing_item = Item.where(item: parameters['item'], room: parameters['room']).first
+
+	 		if existing_item
+	 			existing_item.qty += 1
+	 			
+	 			if existing_item.save
+					response.headers['Location'] = "#{base_url}/api/v1/items/#{existing_item.id}"
+					status 201
+				else
+					status 422
+					body ItemSerializer.new(existing_item).to_json
+				end
+	 		else
+				item = Item.new(parameters)
+				item.qty = 1
+
+				if item.save
+					response.headers['Location'] = "#{base_url}/api/v1/items/#{item.id}"
+					status 201
+				else
+					status 422
+					body ItemSerializer.new(item).to_json
+				end
+			end
+	 	end
+
+	 	def delete_item(parameters)
+	 		item = Item.where(item: parameters['item'], room: parameters['room']).first
+	 		item.destroy if item
+	 		status 204
+	 	end
+
+	 	def delete_all
+	 		items = Item.all
+	 		items.each do |t|
+	 			t.destroy 
+	 		end
 	 		status 204
 	 	end
 	end
