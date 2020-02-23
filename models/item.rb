@@ -9,7 +9,6 @@ class Item
 
   validates :item,  presence: true
   validates :store, presence: true
-  validates :room,  presence: true
 
   index({ item: 'text' })
 

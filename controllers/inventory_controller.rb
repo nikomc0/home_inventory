@@ -1,6 +1,7 @@
 require './server'
 require_relative '../helpers/url_helper'
 require_relative '../serializers/item_serializer'
+require 'pry-byebug'
 
 class InventoryController < Application
 	register Sinatra::Namespace
@@ -24,10 +25,10 @@ class InventoryController < Application
 	 	post '/items' do
 	 		params = json_params
 	 		action = params['queryResult']['action']
-	 		parameters = params['queryResult']['parameters']
+	 		parameters = clean_params(params['queryResult']['parameters'])
 
 	 		case action
-	 		when "add_item"
+	 		when "Inventory.Inventory-yes"
 	 			add_item(parameters)
 	 		when "delete_item"
 	 			delete_item(parameters)
@@ -66,7 +67,7 @@ class InventoryController < Application
 	 	end
 
 	 	def add_item(parameters)
-	 		existing_item = Item.where(item: parameters['item'], room: parameters['room']).first
+	 		pp existing_item = Item.where(item: parameters['item']).first
 
 	 		if existing_item
 	 			existing_item.qty += 1
@@ -93,7 +94,8 @@ class InventoryController < Application
 	 	end
 
 	 	def delete_item(parameters)
-	 		item = Item.where(item: parameters['item'], room: parameters['room']).first
+	 		parameters = clean_params(parameters)
+	 		item = Item.where(item: parameters['item']).first
 	 		item.destroy if item
 	 		status 204
 	 	end
@@ -105,5 +107,14 @@ class InventoryController < Application
 	 		end
 	 		status 204
 	 	end
+	end
+
+	private
+	def clean_params(params)
+		params.map do |t| 
+			t.map do |z|
+				z.downcase.gsub(/[^0-9A-Za-z ]/,"")
+			end
+		end.to_h
 	end
 end
