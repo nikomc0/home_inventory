@@ -4,7 +4,7 @@ require'mongoid'
 require_relative './models/item'
 require_relative './models/store'
 
-Mongoid.load!("mongoid.config", :development)
+Mongoid.load!("mongoid.config", :production)
 
 class Application < Sinatra::Base
 	get '/' do
