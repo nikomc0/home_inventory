@@ -114,7 +114,9 @@ class InventoryController < Application
 
 	 	def delete_all
 	 		items = Item.all
-	 		items.each do |t|
+	 		stores = Store.all
+
+	 		[items, store].each do |t|
 	 			t.destroy 
 	 		end
 	 		status 204
