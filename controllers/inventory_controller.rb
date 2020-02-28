@@ -1,6 +1,7 @@
 require './server'
 require_relative '../helpers/url_helper'
 require_relative '../serializers/item_serializer'
+require_relative '../serializers/store_serializer'
 require 'pry-byebug'
 
 class InventoryController < Application
@@ -14,12 +15,16 @@ class InventoryController < Application
 	namespace '/api/v1' do
 	  get '/items' do
 	  	items = Item.all
+	  	stores = Store.all
 
 	  	[:item, :store, :room].each do |filter|
 	  		items = items.send(filter, params[filter]) if params[filter]
 	  	end
 
-	  	items.map { |item| ItemSerializer.new(item) }.to_json
+	  	list_items = items.map { |item| ItemSerializer.new(item) }
+	  	list_stores = stores.map { |store| StoreSerializer.new(store) }
+
+	  	{ items: list_items, stores: list_stores }.to_json
 	  end
 
 	 	post '/items' do
@@ -83,7 +88,9 @@ class InventoryController < Application
 				item = Item.new(parameters)
 				item.qty = 1
 
-				if item.save
+				store = Store.new(store: parameters['store'])
+
+				if item.save && store.save
 					response.headers['Location'] = "#{base_url}/api/v1/items/#{item.id}"
 					status 201
 				else
