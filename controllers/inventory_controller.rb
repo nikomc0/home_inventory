@@ -73,6 +73,7 @@ class InventoryController < Application
 
 	 	def add_item(parameters)
 	 		existing_item = Item.where(item: parameters['item']).first
+			existing_store = Store.where(store: parameters['store']).first
 
 	 		if existing_item
 	 			existing_item.qty += 1
@@ -88,7 +89,6 @@ class InventoryController < Application
 				item = Item.new(parameters)
 				item.qty = 1
 
-				existing_store = Store.where(store: parameters['store'])
 				store = Store.new(store: parameters['store'])
 
 				if !existing_store
