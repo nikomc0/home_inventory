@@ -72,7 +72,7 @@ class InventoryController < Application
 	 	end
 
 	 	def add_item(parameters)
-	 		pp existing_item = Item.where(item: parameters['item']).first
+	 		existing_item = Item.where(item: parameters['item']).first
 
 	 		if existing_item
 	 			existing_item.qty += 1
@@ -88,9 +88,14 @@ class InventoryController < Application
 				item = Item.new(parameters)
 				item.qty = 1
 
+				existing_store = Store.where(store: parameters['store'])
 				store = Store.new(store: parameters['store'])
 
-				if item.save && store.save
+				if !existing_store
+					store.save
+				end
+
+				if item.save
 					response.headers['Location'] = "#{base_url}/api/v1/items/#{item.id}"
 					status 201
 				else
