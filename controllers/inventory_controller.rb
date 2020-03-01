@@ -29,27 +29,22 @@ class InventoryController < Application
 
 	 	post '/items' do
 	 		params = json_params
-	 		action = params['queryResult']['action']
-	 		parameters = clean_params(params['queryResult']['parameters'])
+
+	 		if params['queryResult']
+	 			action = params['queryResult']['action']
+	 			parameters = clean_params(params['queryResult']['parameters'])
+	 		else
+	 			action = ""
+	 			parameters = params
+	 		end
 
 	 		case action
-	 		when "Inventory.Inventory-yes"
-	 			add_item(parameters)
 	 		when "delete_item"
 	 			delete_item(parameters)
 	 		when "delete_all"
 	 			delete_all
 	 		else
-	 			item = Item.new(parameters)
-				item.qty = 1
-
-				if item.save
-					response.headers['Location'] = "#{base_url}/api/v1/items/#{item.id}"
-					status 201
-				else
-					status 422
-					body ItemSerializer.new(item).to_json
-				end
+	 			add_item(parameters)
 	 		end
 	 	end
 
