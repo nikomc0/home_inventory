@@ -62,7 +62,13 @@ class InventoryController < Application
 
 	 	delete '/items/:id' do |id|
 	 		item = Item.where(id: id).first
-	 		item.destroy if item
+	 		
+	 		if item.qty > 1
+	 			item.qty -= 1
+	 			item.save
+	 		else
+	 			item.destroy if item
+	 		end
 	 		status 204
 	 	end
 
@@ -81,14 +87,16 @@ class InventoryController < Application
 					body ItemSerializer.new(existing_item).to_json
 				end
 	 		else
-				item = Item.new(parameters)
-				item.qty = 1
+	 			if parameters['store'].empty?
+	 				parameters['store'] = "unassigned"
+	 			end
 
 				store = Store.new(store: parameters['store'])
+				store.save if !existing_store
+				store = StoreSerializer.new(store).as_json
 
-				if !existing_store
-					store.save
-				end
+				item = Item.new(item: parameters['item'], store: store)
+				item.qty = 1
 
 				if item.save
 					response.headers['Location'] = "#{base_url}/api/v1/items/#{item.id}"

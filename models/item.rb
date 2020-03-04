@@ -2,7 +2,7 @@ class Item
 	include Mongoid::Document
 
 	field :item,  type: String
-  field :store, type: String
+  field :store, type: Hash
   field :price, type: Float
   field :room,  type: String
   field :qty,   type: Float
