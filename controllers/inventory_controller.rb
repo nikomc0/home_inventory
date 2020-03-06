@@ -62,7 +62,7 @@ class InventoryController < Application
 
 	 	delete '/items/:id' do |id|
 	 		item = Item.where(id: id).first
-	 		
+
 	 		if item.qty > 1
 	 			item.qty -= 1
 	 			item.save
@@ -87,13 +87,19 @@ class InventoryController < Application
 					body ItemSerializer.new(existing_item).to_json
 				end
 	 		else
-	 			if parameters['store'].empty?
-	 				parameters['store'] = "unassigned"
+	 			if existing_store
+	 				existing_store = StoreSerializer.new(existing_store).as_json
+	 				item = Item.new(item: parameters['item'], store: existing_store)
+	 				item.qty = 1
+	 				item.save
+	 			else
+		 			if parameters['store'].empty?
+		 				parameters['store'] = "unassigned"
+		 			end
+					store = Store.new(store: parameters['store'])
+					store.save
+					store = StoreSerializer.new(store).as_json
 	 			end
-
-				store = Store.new(store: parameters['store'])
-				store.save if !existing_store
-				store = StoreSerializer.new(store).as_json
 
 				item = Item.new(item: parameters['item'], store: store)
 				item.qty = 1
