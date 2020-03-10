@@ -1,11 +1,12 @@
 class Store
 	include Mongoid::Document
 
-	field :store, type: String
+	field :name,       type: String
+	field :total_items, type: Float, default: 0
 
-	validates :store, presence: true
+	validates :name, presence: true
 
-	index({ item: 'text' })
+	index({ name: 'text' })
 
-	scope :store, -> (store) { where(store: /^#{store}/)}
+	scope :store, -> (store) { where(name: /^#{store}/)}
 end

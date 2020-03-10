@@ -12,6 +12,11 @@ class InventoryController < Application
     content_type 'application/json'
   end
 
+  attr_accessor :item, :store
+
+  @item = nil
+  @store = nil
+
 	namespace '/api/v1' do
 	  get '/items' do
 	  	items = Item.all.sort({'store': 1})
@@ -35,7 +40,7 @@ class InventoryController < Application
 	 			parameters = clean_params(params['queryResult']['parameters'])
 	 		else
 	 			action = ""
-	 			parameters = params
+	 			parameters = clean_params(params)
 	 		end
 
 	 		case action
@@ -61,62 +66,52 @@ class InventoryController < Application
 	 	end
 
 	 	delete '/items/:id' do |id|
-	 		item = Item.where(id: id).first
+	 		item = Item.where(id: params['id']).first
+	 		store = Store.where(item.store).first
 
-	 		if item.qty > 1
-	 			item.qty -= 1
-	 			item.save
+	 		if store.total_items > 1
+	 			store.total_items -= 1
+	 			store.save
 	 		else
-	 			item.destroy if item
+	 			store.destroy if store
 	 		end
+
+	 		item.destroy if item
 	 		status 204
 	 	end
 
 	 	def add_item(parameters)
-	 		existing_item = Item.where(item: parameters['item']).first
-			existing_store = Store.where(store: parameters['store']).first
+	 		value_exists?(parameters)
 
-	 		if existing_item
-	 			existing_item.qty += 1
-	 			
-	 			if existing_item.save
-					response.headers['Location'] = "#{base_url}/api/v1/items/#{existing_item.id}"
-					status 201
-				else
-					status 422
-					body ItemSerializer.new(existing_item).to_json
-				end
-	 		else
-	 			if existing_store
-	 				existing_store = StoreSerializer.new(existing_store).as_json
-	 				item = Item.new(item: parameters['item'], store: existing_store)
-	 				item.qty = 1
-	 				item.save
-	 			else
-		 			if parameters['store'].empty?
-		 				parameters['store'] = "unassigned"
-		 			end
-					store = Store.new(store: parameters['store'])
-					store.save
-					store = StoreSerializer.new(store).as_json
-	 			end
+			@item ||= Item.new(name: parameters['item'])
+			@item.qty += 1
 
-				item = Item.new(item: parameters['item'], store: store)
-				item.qty = 1
+			@store ||= Store.new(name: parameters['store'])
+			@store.total_items += 1
 
-				if item.save
-					response.headers['Location'] = "#{base_url}/api/v1/items/#{item.id}"
-					status 201
-				else
-					status 422
-					body ItemSerializer.new(item).to_json
-				end
+			@item.store = StoreSerializer.new(@store).as_json
+
+			if @item.save && @store.save
+				# response.headers['Location'] = "#{base_url}/api/v1/items/#{item.id}"
+				status 201
+			else
+				status 422
+				body ItemSerializer.new(item).to_json
 			end
 	 	end
 
 	 	def delete_item(parameters)
 	 		parameters = clean_params(parameters)
-	 		item = Item.where(item: parameters['item']).first
+	 		item = Item.where(name: parameters['item']).first
+	 		store = Store.where(item.store)
+
+	 		if store.total_items > 1
+	 			store.total_items -= 1
+	 			store.save
+	 		else
+	 			store.destroy if store
+	 		end
+
 	 		item.destroy if item
 	 		status 204
 	 	end
@@ -133,10 +128,24 @@ class InventoryController < Application
 	end
 
 	private
+	def value_exists?(params)
+ 		existing_item = Item.where(name: params['item']).first
+		existing_store = Store.where(name: params['store']).first
+
+		if existing_item
+			@item = existing_item
+		end
+
+		if existing_store
+			@store = existing_store
+		end
+	end
+
 	def clean_params(params)
 		params.map do |t| 
 			t.map do |z|
-				z.downcase.gsub(/[^0-9A-Za-z ]/,"")
+				# removes leading/trailing spaces and special characters
+				z.downcase.gsub(/[^0-9A-Za-z ]+/,"").strip()
 			end
 		end.to_h
 	end

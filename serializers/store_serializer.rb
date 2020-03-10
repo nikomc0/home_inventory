@@ -6,7 +6,8 @@ class StoreSerializer
 	def as_json(*)
 		stores = {
 			id: @store.id.to_s,
-			store: @store.store
+			name: @store.name,
+			total_items: @store.total_items
 		}
 
 		stores[:errors] = @store.errors if @store.errors.any?
