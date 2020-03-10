@@ -103,7 +103,7 @@ class InventoryController < Application
 	 	def delete_item(parameters)
 	 		parameters = clean_params(parameters)
 	 		item = Item.where(name: parameters['item']).first
-	 		store = Store.where(item.store)
+	 		store = Store.where(item.store).first
 
 	 		if store.total_items > 1
 	 			store.total_items -= 1
