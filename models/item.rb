@@ -1,11 +1,14 @@
 class Item
 	include Mongoid::Document
 
-	field :name,  type: String
-  field :store, type: Hash
-  field :price, type: Float, default: 0.00
-  field :room,  type: String
-  field :qty,   type: Float, default: 0
+  belongs_to :store
+
+	field :name,       type: String
+  field :store_info, type: Hash
+  # field :price,      type: Float, default: 0.00
+  # field :room,       type: String
+  field :qty,        type: Float, default: 0
+  field :complete,   type: Boolean, default: false
 
   validates :name,  presence: true
   validates :store, presence: true

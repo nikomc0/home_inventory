@@ -6,11 +6,15 @@ class ItemSerializer
 	def as_json(*)
 		data = {
 			id: @item.id.to_s,
-			item: @item.name,
-			store: { id: @item.store['id'].to_s, name: @item.store['name']},
-			price: @item.price,
-			room: @item.room,
-			qty: @item.qty
+			name: @item.name,
+			store_info: { 
+				id: @item.store_info['id'].to_s, 
+				name: @item.store_info['name']
+			},
+			# price: @item.price,
+			# room: @item.room,
+			qty: @item.qty,
+			complete: @item.complete
 		}
 
 		data[:errors] = @item.errors if @item.errors.any?

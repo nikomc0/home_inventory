@@ -1,5 +1,6 @@
 class Store
 	include Mongoid::Document
+	has_many :items
 
 	field :name,       type: String
 	field :total_items, type: Float, default: 0
@@ -8,5 +9,5 @@ class Store
 
 	index({ name: 'text' })
 
-	scope :store, -> (store) { where(name: /^#{store}/)}
+	# default_scope :store, -> { where(item_attributes: {complete: false })}
 end

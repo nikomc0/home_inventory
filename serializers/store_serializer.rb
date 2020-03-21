@@ -7,6 +7,7 @@ class StoreSerializer
 		stores = {
 			id: @store.id.to_s,
 			name: @store.name,
+			items: @store.items,
 			total_items: @store.total_items
 		}
 

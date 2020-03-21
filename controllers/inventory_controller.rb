@@ -3,6 +3,7 @@ require_relative '../helpers/url_helper'
 require_relative '../serializers/item_serializer'
 require_relative '../serializers/store_serializer'
 require 'pry-byebug'
+require 'prettyprint'
 
 class InventoryController < Application
 	register Sinatra::Namespace
@@ -26,8 +27,8 @@ class InventoryController < Application
 	  		items = items.send(filter, params[filter]) if params[filter]
 	  	end
 
-	  	list_items = items.map { |item| ItemSerializer.new(item) }
-	  	list_stores = stores.map { |store| StoreSerializer.new(store) }
+	  	list_items = items.map { |item| ItemSerializer.new(item) } if items
+	  	list_stores = stores.map { |store| StoreSerializer.new(store) } if stores
 
 	  	{ items: list_items, stores: list_stores }.to_json
 	  end
@@ -49,16 +50,19 @@ class InventoryController < Application
 	 		when "delete_all"
 	 			delete_all
 	 		else
-	 			add_item(parameters)
+	 			return add_item(parameters)
 	 		end
 	 	end
 
-	 	patch '/items/:id' do |id|
-	 		item = Item.where(id: id).first
-	 		halt(404, { message: 'Item not found' }.to_json) unless item
+	 	put '/items/:id' do |id|
+	 		params = json_params
 
-	 		if item.update_attributes(json_params)
-	 			ItemSerializer.new(item).to_json
+	 		item = Item.where(id: id).first
+	 		# halt(404, { message: 'Item not found' }.to_json) unless item
+
+	 		if item.update_attributes(params['item'])
+	 			body ItemSerializer.new(item).to_json
+	 			status 201
 	 		else
 	 			status 422
 	 			body ItemSerializer.new(item).to_json
@@ -83,16 +87,16 @@ class InventoryController < Application
 	 	def add_item(parameters)
 	 		value_exists?(parameters)
 
-			@item ||= Item.new(name: parameters['item'])
+			@item ||= Item.new(name: parameters['item'], store: {name: parameters['store']})
+			@item.store_info = StoreSerializer.new(@item.store).as_json
+	 		@item.store.total_items += 1
 			@item.qty += 1
 
-			@store ||= Store.new(name: parameters['store'])
-			@store.total_items += 1
-
-			@item.store = StoreSerializer.new(@store).as_json
+	 		@store = @item.store
 
 			if @item.save && @store.save
 				# response.headers['Location'] = "#{base_url}/api/v1/items/#{item.id}"
+				body ItemSerializer.new(@item).to_json
 				status 201
 			else
 				status 422
@@ -129,16 +133,8 @@ class InventoryController < Application
 
 	private
 	def value_exists?(params)
- 		existing_item = Item.where(name: params['item']).first
-		existing_store = Store.where(name: params['store']).first
-
-		if existing_item
-			@item = existing_item
-		end
-
-		if existing_store
-			@store = existing_store
-		end
+		existing_item = Item.where({name: params['item'], 'store_info.name': params['store']}).first
+		@item = existing_item if existing_item
 	end
 
 	def clean_params(params)
