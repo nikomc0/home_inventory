@@ -6,7 +6,7 @@ class ItemSerializer
 	def as_json(*)
 		data = {
 			id: @item.id.to_s,
-			item: @item.name,
+			name: @item.name,
 			store_info: { id: @item.store_id.to_s, name: @item.store.name},
 			# price: @item.price,
 			# room: @item.room,

@@ -88,6 +88,8 @@ class InventoryController < Application
 	 		value_exists?(parameters)
 
 			@item ||= Item.new(name: parameters['item'], store: {name: parameters['store']})
+
+			binding.pry
 			@item.store_info = StoreSerializer.new(@item.store).as_json
 	 		@item.store.total_items += 1
 			@item.qty += 1

@@ -4,7 +4,7 @@ class Item
   accepts_nested_attributes_for :store
 
 	field :name,  type: String
-  field :store, type: Hash
+  field :store_info, type: Hash
   field :qty,   type: Float, default: 0
   # field :price, type: Float, default: 0.00
   # field :room,  type: String
