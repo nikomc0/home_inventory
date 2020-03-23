@@ -88,8 +88,6 @@ class InventoryController < Application
 	 		value_exists?(parameters)
 
 			@item ||= Item.new(name: parameters['item'], store: {name: parameters['store']})
-
-			binding.pry
 			@item.store_info = StoreSerializer.new(@item.store).as_json
 	 		@item.store.total_items += 1
 			@item.qty += 1
@@ -136,7 +134,10 @@ class InventoryController < Application
 	private
 	def value_exists?(params)
 		existing_item = Item.where({name: params['item'], 'store_info.name': params['store']}).first
+		existing_store = Store.where(name: params['store']).first
+
 		@item = existing_item if existing_item
+		@store = existing_store if existing_store
 	end
 
 	def clean_params(params)
