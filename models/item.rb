@@ -1,17 +1,16 @@
 class Item
 	include Mongoid::Document
-
   belongs_to :store
+  accepts_nested_attributes_for :store
 
-	field :name,       type: String
-  field :store_info, type: Hash
-  # field :price,      type: Float, default: 0.00
-  # field :room,       type: String
-  field :qty,        type: Float, default: 0
-  field :complete,   type: Boolean, default: false
+	field :name,  type: String
+  field :store, type: Hash
+  field :qty,   type: Float, default: 0
+  # field :price, type: Float, default: 0.00
+  # field :room,  type: String
+  field :complete, type: Boolean, default: false
 
   validates :name,  presence: true
-  validates :store, presence: true
 
   index({ name: 'text' })
 

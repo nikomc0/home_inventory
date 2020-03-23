@@ -20,7 +20,7 @@ class InventoryController < Application
 
 	namespace '/api/v1' do
 	  get '/items' do
-	  	items = Item.all.sort({'store': 1})
+	  	items = Item.all
 	  	stores = Store.all
 
 	  	[:item, :store, :room].each do |filter|

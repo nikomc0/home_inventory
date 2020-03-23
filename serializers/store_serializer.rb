@@ -7,8 +7,8 @@ class StoreSerializer
 		stores = {
 			id: @store.id.to_s,
 			name: @store.name,
-			items: @store.items,
-			total_items: @store.total_items
+			total_items: @store.total_items,
+			items: @store.items
 		}
 
 		stores[:errors] = @store.errors if @store.errors.any?

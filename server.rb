@@ -1,4 +1,5 @@
 require 'sinatra'
+require 'dotenv/load'
 require "sinatra/namespace"
 require'mongoid'
 require_relative './models/item'
