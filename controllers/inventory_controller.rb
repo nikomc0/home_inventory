@@ -71,7 +71,7 @@ class InventoryController < Application
 
 	 	delete '/items/:id' do |id|
 	 		item = Item.where(id: params['id']).first
-	 		store = Store.where(item.store).first
+	 		store = Store.where(name: item.store.name).first
 
 	 		if store.total_items > 1
 	 			store.total_items -= 1
@@ -87,12 +87,15 @@ class InventoryController < Application
 	 	def add_item(parameters)
 	 		value_exists?(parameters)
 
-			@item ||= Item.new(name: parameters['item'], store: {name: parameters['store']})
+			@item ||= Item.new(name: parameters['item'])
+			@store ||= Store.new(name: parameters['store'])
+
+			@item.store = @store
 			@item.store_info = StoreSerializer.new(@item.store).as_json
 	 		@item.store.total_items += 1
 			@item.qty += 1
 
-	 		@store = @item.store
+	 		# @store = @item.store
 
 			if @item.save && @store.save
 				# response.headers['Location'] = "#{base_url}/api/v1/items/#{item.id}"

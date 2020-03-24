@@ -61,6 +61,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  byebug
   dotenv
   mongoid
   pry-byebug
