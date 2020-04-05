@@ -55,12 +55,22 @@ class InventoryController < Application
 	 	end
 
 	 	put '/items/:id' do |id|
+	 		item = Item.where(id: id).first
 	 		params = json_params
 
-	 		item = Item.where(id: id).first
-	 		# halt(404, { message: 'Item not found' }.to_json) unless item
+	 		value_exists?(params['item']['store_info']['name'])
 
-	 		if item.update_attributes(params['item'])
+	 		if !@store
+	 			@store = Store.new(name: params['item']['store_info']['name'])
+	 			item.store = @store
+	 			item.save
+	 			return (
+	 					body ItemSerializer.new(item).to_json
+	 					status 200
+	 				)
+	 		end
+	 		
+	 		if item.update(params['item']) && item.update(store: params['item']['store_info']['id'])
 	 			body ItemSerializer.new(item).to_json
 	 			status 201
 	 		else
@@ -137,7 +147,7 @@ class InventoryController < Application
 	private
 	def value_exists?(params)
 		existing_item = Item.where({name: params['item'], 'store_info.name': params['store']}).first
-		existing_store = Store.where(name: params['store']).first
+		existing_store = Store.where(name: params).first || Store.where(name: params['store']).first
 
 		@item = existing_item if existing_item
 		@store = existing_store if existing_store
