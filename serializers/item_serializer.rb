@@ -8,10 +8,10 @@ class ItemSerializer
 			id: @item.id.to_s,
 			name: @item.name,
 			store_info: { id: @item.store_id.to_s, name: @item.store.name},
-			# price: @item.price,
-			# room: @item.room,
 			qty: @item.qty,
-			complete: @item.complete
+			complete: @item.complete,
+			created_at: @item.created_at,
+			updated_at: @item.updated_at
 		}
 
 		data[:errors] = @item.errors if @item.errors.any?
