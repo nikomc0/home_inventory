@@ -4,9 +4,6 @@ require_relative '../serializers/item_serializer'
 require_relative '../serializers/store_serializer'
 require_relative '../authentication/token_strategy'
 require 'warden'
-require 'pry-byebug'
-require 'prettyprint'
-
 
 class InventoryController < Application
 	include URLHelper
