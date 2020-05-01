@@ -5,6 +5,12 @@ gem 'mongoid'
 # Required to use some advanced features of# Sinatra, like namespaces
 gem 'sinatra-contrib'
 gem 'dotenv'
-gem 'shotgun'
-gem 'byebug'
-gem 'pry-byebug'
+gem 'sinatra_warden'
+gem 'bcrypt'
+gem 'jwt'
+
+group :test, :development do
+	gem 'shotgun'
+	gem 'byebug'
+	gem 'pry-byebug'
+end

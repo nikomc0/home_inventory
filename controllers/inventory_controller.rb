@@ -2,12 +2,15 @@ require './server'
 require_relative '../helpers/url_helper'
 require_relative '../serializers/item_serializer'
 require_relative '../serializers/store_serializer'
+require_relative '../authentication/token_strategy'
+require 'warden'
 require 'pry-byebug'
 require 'prettyprint'
 
+
 class InventoryController < Application
-	register Sinatra::Namespace
 	include URLHelper
+	register Sinatra::Namespace
 
 	before do
     content_type 'application/json'
@@ -17,25 +20,34 @@ class InventoryController < Application
 
   @item = nil
   @store = nil
+  @items = nil
+
 
 	namespace '/api/v1' do
 	  get '/items' do
-	  	items = Item.all
-	  	stores = Store.all
+			env['warden'].authenticate!
+	  	user = env['warden'].user
 
-	  	[:item, :store, :room].each do |filter|
-	  		items = items.send(filter, params[filter]) if params[filter]
-	  	end
+			# items = Item.where(user_id: user.id)
 
-	  	list_items = items.map { |item| ItemSerializer.new(item) } if items
-	  	list_stores = stores.map { |store| StoreSerializer.new(store) } if stores
+			stores = Store.where({user_id: user.id})
 
-	  	{ items: list_items, stores: list_stores }.to_json
+			stores = stores.each do |store|
+				store.items = store.items.in(user_id: user.id)
+				store
+			end
+
+			# list_items = items.map { |item| ItemSerializer.new(item) } if items
+			list_stores = stores.map { |store| StoreSerializer.new(store) } if stores
+
+			# { items: list_items, stores: list_stores }.to_json
+			{ stores: list_stores }.to_json
 	  end
 
 	 	post '/items' do
 	 		params = json_params
 
+	 		# Post request coming from Google Home
 	 		if params['queryResult']
 	 			action = params['queryResult']['action']
 	 			parameters = clean_params(params['queryResult']['parameters'])
@@ -58,10 +70,10 @@ class InventoryController < Application
 	 		item = Item.where(id: id).first
 	 		params = json_params
 
-	 		value_exists?(params['item']['store_info']['name'])
-
+	 		value_exists?(params['item']['store_info']['store_name'])
+	 		
 	 		if !@store
-	 			@store = Store.new(name: params['item']['store_info']['name'])
+	 			@store = Store.new(name: params['item']['store_info']['store_name'])
 	 			item.store = @store
 	 			item.save
 	 			return (
@@ -70,7 +82,7 @@ class InventoryController < Application
 	 				)
 	 		end
 	 		
-	 		if item.update(params['item']) && item.update(store: params['item']['store_info']['id'])
+	 		if item.update(params['item']) && item.update(store: params['item']['store_info']['store_id'])
 	 			body ItemSerializer.new(item).to_json
 	 			status 201
 	 		else
@@ -96,16 +108,20 @@ class InventoryController < Application
 
 	 	def add_item(parameters)
 	 		value_exists?(parameters)
-
+			
+			@user = env['warden'].user if env['warden'].user
+	 		
 			@item ||= Item.new(name: parameters['item'])
 			@store ||= Store.new(name: parameters['store'])
+			
+			@store.user = @user
 
 			@item.store = @store
-			@item.store_info = StoreSerializer.new(@item.store).as_json
+	 		@item.store_info = {store_id: @store.id.to_s, store_name: @store.name}
 	 		@item.store.total_items += 1
 			@item.qty += 1
 
-	 		# @store = @item.store
+			@item.user_id = @user.id
 
 			if @item.save && @store.save
 				# response.headers['Location'] = "#{base_url}/api/v1/items/#{item.id}"
@@ -145,9 +161,11 @@ class InventoryController < Application
 	end
 
 	private
+	
 	def value_exists?(params)
-		existing_item = Item.where({name: params['item'], 'store_info.name': params['store']}).first
-		existing_store = Store.where(name: params).first || Store.where(name: params['store']).first
+		user = env['warden'].user
+		existing_item = Item.where({name: params['item'], 'store_info.name': params['store'], user_id: user.id}).first
+		existing_store = Store.where(name: params, user_id: user.id).first || Store.where(name: params['store'], user_id: user.id).first
 
 		@item = existing_item if existing_item
 		@store = existing_store if existing_store
