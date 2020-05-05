@@ -7,7 +7,7 @@ class ItemSerializer
 		data = {
 			id: @item.id.to_s,
 			name: @item.name,
-			store_info: { id: @item.store_id.to_s, name: @item.store.name},
+			store_info: { id: @item.store_id.to_s, store_name: @item.store.name},
 			qty: @item.qty,
 			complete: @item.complete,
 			created_at: @item.created_at,
