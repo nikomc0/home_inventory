@@ -19,7 +19,6 @@ class InventoryController < Application
   @store = nil
   @items = nil
 
-
 	namespace '/api/v1' do
 	  get '/items' do
 			env['warden'].authenticate!
@@ -116,7 +115,7 @@ class InventoryController < Application
 			@item.store = @store
 	 		@item.store_info = {store_id: @store.id.to_s, store_name: @store.name}
 	 		@item.store.total_items += 1
-			@item.qty += 1
+			@item.qty = parameters['qty']
 
 			@item.user_id = @user.id
 
@@ -169,10 +168,14 @@ class InventoryController < Application
 	end
 
 	def clean_params(params)
-		params.map do |t| 
-			t.map do |z|
-				# removes leading/trailing spaces and special characters
-				z.downcase.gsub(/[^0-9A-Za-z ]+/,"").strip()
+		params.map do |t|
+			if t[1].class == Integer
+				t
+			else
+				t.map do |z|
+					# removes leading/trailing spaces and special characters
+					z.downcase.gsub(/[^0-9A-Za-z ]+/,"").strip()
+				end
 			end
 		end.to_h
 	end
