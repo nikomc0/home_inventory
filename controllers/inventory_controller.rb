@@ -3,6 +3,7 @@ require_relative '../helpers/url_helper'
 require_relative '../serializers/item_serializer'
 require_relative '../serializers/store_serializer'
 require_relative '../authentication/token_strategy'
+require 'pry-byebug'
 require 'warden'
 
 class InventoryController < Application
@@ -68,7 +69,7 @@ class InventoryController < Application
 	 		params = json_params
 
 	 		value_exists?(params['item']['store_info']['store_name'])
-	 		
+
 	 		if !@store
 	 			@store = Store.new(name: params['item']['store_info']['store_name'])
 	 			item.store = @store
@@ -79,7 +80,7 @@ class InventoryController < Application
 	 				)
 	 		end
 	 		
-	 		if item.update(params['item']) && item.update(store: params['item']['store_info']['store_id'])
+	 		if item.update(params['item']) && item.update(store: params['item']['store_info']['id'])
 	 			body ItemSerializer.new(item).to_json
 	 			status 201
 	 		else
