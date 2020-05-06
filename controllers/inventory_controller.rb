@@ -3,7 +3,6 @@ require_relative '../helpers/url_helper'
 require_relative '../serializers/item_serializer'
 require_relative '../serializers/store_serializer'
 require_relative '../authentication/token_strategy'
-require 'pry-byebug'
 require 'warden'
 
 class InventoryController < Application
