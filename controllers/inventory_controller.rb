@@ -3,6 +3,7 @@ require_relative '../helpers/url_helper'
 require_relative '../serializers/item_serializer'
 require_relative '../serializers/store_serializer'
 require_relative '../authentication/token_strategy'
+require 'pry-byebug'
 require 'warden'
 
 class InventoryController < Application
@@ -11,6 +12,7 @@ class InventoryController < Application
 
 	before do
     content_type 'application/json'
+		env['warden'].authenticate!
   end
 
   attr_accessor :item, :store
@@ -21,10 +23,7 @@ class InventoryController < Application
 
 	namespace '/api/v1' do
 	  get '/items' do
-			env['warden'].authenticate!
 	  	user = env['warden'].user
-
-			# items = Item.where(user_id: user.id)
 
 			stores = Store.where({user_id: user.id})
 
@@ -33,10 +32,8 @@ class InventoryController < Application
 				store
 			end
 
-			# list_items = items.map { |item| ItemSerializer.new(item) } if items
 			list_stores = stores.map { |store| StoreSerializer.new(store) } if stores
 
-			# { items: list_items, stores: list_stores }.to_json
 			{ stores: list_stores }.to_json
 	  end
 
@@ -78,12 +75,13 @@ class InventoryController < Application
 	 				)
 	 		end
 	 		
-	 		if item.update(params['item']) && item.update(store: params['item']['store_info']['id'])
+	 		# TO DO: Remove the need for the OR statement.
+	 		# Model data should be consistent throughout i.e. store_info.id or store_info.store_id, not both.
+	 		if item.update(params['item']) && item.update(store: params['item']['store_info']['store_id']) || item.update(params['item']) && item.update(store: params['item']['store_info']['id'])
 	 			body ItemSerializer.new(item).to_json
 	 			status 201
 	 		else
 	 			status 422
-	 			body ItemSerializer.new(item).to_json
 	 		end
 	 	end
 
@@ -160,7 +158,7 @@ class InventoryController < Application
 	
 	def value_exists?(params)
 		user = env['warden'].user
-		existing_item = Item.where({name: params['item'], 'store_info.name': params['store'], user_id: user.id}).first
+		existing_item = Item.where({name: params['item'], 'store_info.store_name': params['store'], user_id: user.id}).first
 		existing_store = Store.where(name: params, user_id: user.id).first || Store.where(name: params['store'], user_id: user.id).first
 
 		@item = existing_item if existing_item
