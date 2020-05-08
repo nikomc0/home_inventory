@@ -3,8 +3,6 @@ require_relative '../helpers/url_helper'
 require 'warden'
 require 'jwt'
 
-require 'pry-byebug'
-
 class UserController < Application
 	include URLHelper
 
@@ -24,7 +22,6 @@ class UserController < Application
 			status 200
 			{user: {email: user.email}, token: token}.to_json
 		else
-			# binding.pry
 			status 422
 			user.errors.messages.to_json
 		end
