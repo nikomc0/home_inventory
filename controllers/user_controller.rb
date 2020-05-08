@@ -3,6 +3,8 @@ require_relative '../helpers/url_helper'
 require 'warden'
 require 'jwt'
 
+require 'pry-byebug'
+
 class UserController < Application
 	include URLHelper
 
@@ -20,8 +22,9 @@ class UserController < Application
 		if user.save
 		 	token = JWT.encode user.password_digest, nil, 'none'
 			status 200
-			{token: token}.to_json
+			{user: {email: user.email}, token: token}.to_json
 		else
+			# binding.pry
 			status 422
 			user.errors.messages.to_json
 		end
