@@ -11,6 +11,7 @@ class Item
   field :qty,        type: Float, default: 0
   field :complete,   type: Boolean, default: false
   field :user_id,    type: String
+  field :location,    type: Integer
 
   validates :name,  presence: true
 

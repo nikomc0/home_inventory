@@ -111,7 +111,7 @@ class InventoryController < Application
 
 			@item.store = @store
 	 		@item.store_info = {store_id: @store.id.to_s, store_name: @store.name}
-	 		@item.store.total_items += 1
+	 		# @item.store.total_items += 1
 			@item.qty = parameters['qty']
 
 			@item.user_id = @user.id
