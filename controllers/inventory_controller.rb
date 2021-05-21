@@ -6,19 +6,19 @@ require_relative '../authentication/token_strategy'
 require 'warden'
 
 class InventoryController < Application
-	include URLHelper
-	register Sinatra::Namespace
+    include URLHelper
+    register Sinatra::Namespace
 
-	before do
-    content_type 'application/json'
-		env['warden'].authenticate!
-  end
+    before do
+    	content_type 'application/json'
+	env['warden'].authenticate!
+    end
 
-  attr_accessor :item, :store
+    attr_accessor :item, :store
 
-  @item = nil
-  @store = nil
-  @items = nil
+    @item = nil
+    @store = nil
+    @items = nil
 
 	namespace '/api/v1' do
 	  get '/items' do
