@@ -21,8 +21,8 @@ class InventoryController < Application
     @items = nil
 
 	namespace '/api/v1' do
-	  get '/items' do
-	  	user = env['warden'].user
+		get '/items' do
+			user = env['warden'].user
 
 			stores = Store.where({user_id: user.id})
 
@@ -34,7 +34,7 @@ class InventoryController < Application
 			list_stores = stores.map { |store| StoreSerializer.new(store) } if stores
 
 			{ stores: list_stores }.to_json
-	  end
+		end
 
 	 	post '/items' do
 	 		params = json_params
